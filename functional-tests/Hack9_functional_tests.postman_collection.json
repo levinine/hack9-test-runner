@@ -1,0 +1,182 @@
+{
+	"info": {
+		"_postman_id": "3d0bea70-2a0d-4fdc-8b1a-ae04a104fa23",
+		"name": "Hack9 functional tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "price",
+			"item": [
+				{
+					"name": "Get call price for the given phone number with correct time in the past",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ed45f58a-bb17-4ec9-bddb-19f3466af5b5",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"prefixCallResult\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"priceCallResult\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"initialCallResult\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"incrementCallResult\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"fromCallResult\"));",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/switch/price?number={{numberInput}}&time={{startDateInput}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"switch",
+								"price"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "{{numberInput}}"
+								},
+								{
+									"key": "time",
+									"value": "{{startDateInput}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "call",
+			"item": [
+				{
+					"name": "Register call",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9d274676-6bb6-412d-92d1-b7f9db0f2ae9",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "f09918af-4823-44a1-b82d-60e46471cf1f",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callCalling\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callCalled\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callStart\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callDuration\"));",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callRounded\"));",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callPrice\"));",
+									"});",
+									"",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callCost\"));",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"calling\" : \"{{callCalling}}\",\n\t\"called\" : \"{{callCalled}}\",\n\t\"start\" : \"{{callStart}}\",\n\t\"duration\" : \"{{callDuration}}\" \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/switch/call",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"switch",
+								"call"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
