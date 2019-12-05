@@ -9,7 +9,7 @@
 			"name": "price",
 			"item": [
 				{
-					"name": "Get call price for the given phone number with correct time in the past",
+					"name": "Get call price for the given phone number with correct time in the past Copy",
 					"event": [
 						{
 							"listen": "test",
@@ -20,31 +20,28 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
+									"var data = JSON.parse(responseBody);",
 									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"prefixCallResult\"));",
+									"",
+									"pm.test(\"Test price prefix\", function () {",
+									"    pm.expect(data.prefix.toString()).to.be.eql(pm.variables.get(\"prefixCallResult\").toString());",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"priceCallResult\"));",
+									"pm.test(\"Test price\", function () {",
+									"    pm.expect(data.price.toNumber().toFixed(2)).to.be.eql(pm.variables.get(\"priceCallResult\").toFixed(2));",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"initialCallResult\"));",
+									"pm.test(\"Test the date price is valid from\", function () {",
+									"    pm.expect(data.from.toString()).to.be.eql(pm.variables.get(\"fromCallResult\").toString());",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"incrementCallResult\"));",
+									"pm.test(\"Test price initial\", function () {",
+									"    pm.expect(data.initial.toString()).to.be.eql(pm.variables.get(\"initialCallResult\").toString());",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"fromCallResult\"));",
+									"pm.test(\"Test price increment\", function () {",
+									"    pm.expect(data.increment.toString()).to.be.eql(pm.variables.get(\"incrementCallResult\").toString());",
 									"});",
-									"",
 									""
 								],
 								"type": "text/javascript"
@@ -105,36 +102,39 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callCalling\"));",
+									"var data = JSON.parse(responseBody);",
+									"",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callCalled\"));",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.calling.toString()).to.be.eql(pm.variables.get(\"callCalling\").toString());",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callStart\"));",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.called.toString()).to.be.eql(pm.variables.get(\"callCalled\").toString());",
 									"});",
 									"",
-									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callDuration\"));",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.start.toString()).to.be.eql(pm.variables.get(\"callStart\").toString());",
 									"});",
 									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callRounded\"));",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.duration.toString()).to.be.eql(pm.variables.get(\"callDuration\").toString());",
 									"});",
 									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callPrice\"));",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.rounded.toString()).to.be.eql(pm.variables.get(\"callRounded\").toString());",
 									"});",
 									"",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.price.toNumber().toFixed(2)).to.be.eql(pm.variables.get(\"callPrice\").toFixed(2).toString());",
+									"});",
 									"",
-									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(pm.variables.get(\"callCost\"));",
+									"pm.test(\"Test calling number from result body\", function () {",
+									"    pm.expect(data.cost.toNumber().toFixed(2)).to.be.eql(pm.variables.get(\"callCost\").toFixed(2).toString());",
 									"});",
 									""
 								],
@@ -169,6 +169,130 @@
 							"path": [
 								"switch",
 								"call"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "listing",
+			"item": [
+				{
+					"name": "Get listing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "65f139c0-aba1-46aa-87eb-1f6f277381b4",
+								"exec": [
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    var data = JSON.parse(responseBody);",
+									"    tests[\"Check number of calls in listing: \" + data.calls.length] = data.calls.length === pm.variables.get(\"numberOfCalls\") ;",
+									"    ",
+									"    ",
+									"    var numberOfCalls = pm.variables.get(\"numberOfCalls\");",
+									"    for (var i = 0; i<numberOfCalls; i++){",
+									"        ",
+									"        var callCalledi=\"callCalled\"+i;",
+									"        var callStarti=\"callStart\"+i;",
+									"        var callDurationi=\"callDuration\"+i;",
+									"        var callCosti=\"callCost\"+i;",
+									"",
+									"",
+									"        pm.test(\"Test calling number in listing report\", function () {",
+									"            pm.expect(data.calls[i].calling.toString()).to.be.eql(pm.variables.get(\"callCalling\").toString())",
+									"        });",
+									"",
+									"        pm.test(\"Test called number in listing report\", function () {",
+									"            pm.expect(data.calls[i].called.toString()).to.be.eql(pm.variables.get(callCalledi).toString())",
+									"        });",
+									"",
+									"        pm.test(\"Test start of the call in listing report\", function () {",
+									"            pm.expect(data.calls[i].start.toString()).to.be.eql(pm.variables.get(callStarti).toString())",
+									"        });",
+									"",
+									"        pm.test(\"Test call duration in listing greport\", function () {",
+									"            pm.expect(data.calls[i].duration.toString()).to.be.eql(pm.variables.get(callDurationi).toString())",
+									"        });",
+									"",
+									"        pm.test(\"Test call cost in the listing report\", function () {",
+									"            pm.expect(data.calls[i].cost.toNumber().toFixed(2)).to.eql(pm.variables.get(callCosti).toFixed(2).toString());",
+									"        });",
+									"",
+									"}",
+									"",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/listing/{{callCalling}}?from={{callsFromDate}}&to={{callsToDate}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"listing",
+								"{{callCalling}}"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "{{callsFromDate}}"
+								},
+								{
+									"key": "to",
+									"value": "{{callsToDate}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "reset",
+			"item": [
+				{
+					"name": "Reset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ec4d1fae-7173-440b-bc5c-6d9cc74f04ec",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reset"
 							]
 						}
 					},
