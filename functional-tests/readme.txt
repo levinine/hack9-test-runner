@@ -11,6 +11,7 @@ newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_pr
 to run call tests
 newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_calls.csv -e Hack9_env.postman_environment.json --folder call --reporters cli,json --reporter-json-export test_call_results.json
 
+Priror to running listing test execute  test for reset and calls. 
 to run listing test
 newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_listing.csv -e Hack9_env.postman_environment.json --folder listing --reporters cli,json --reporter-json-export test_listing_results.json
 
