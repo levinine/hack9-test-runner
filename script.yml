@@ -1,19 +1,66 @@
-# Thank you for trying serverless-artillery!
-# This default script is intended to get you started quickly.
-# There is a lot more that Artillery can do.
-# You can find great documentation of the possibilities at:
-# https://artillery.io/docs/
 config:
-  # this hostname will be used as a prefix for each URI in the flow unless a complete URI is specified
-  target: "http://sls-wus2-dev-hack9-azure.azurewebsites.net"
+  target: "http://localhost:8080/reference"
+  http:
+    pool: 2000 # number of http connections used for tests, default is one connection per virtual user
+    maxSockets: 3 # number of sockets per virtual user, default is 1
+    timeout: 2 # request timeout in seconds
   phases:
     -
-      duration: 5
-      arrivalCount: 1
+      duration: 10
+      arrivalCount: 10000
       # rampTo: 15
+  payload:
+    path: "data-100k.csv"
+    fields:
+      - "calling"
+      - "called"
+      - "start"
+      - "duration"
+    order: "sequence"
+  processor: "./functions.js"
 scenarios:
-  -
+  - 
     flow:
       -
         get:
-          url: "/api/results"
+          url: "/switch/price?number={{called}}&time={{start}}"
+          # afterResponse: "logErrorResponses"
+      -
+        get:
+          url: "/switch/price?number={{called}}&time={{start}}"
+          # afterResponse: "logErrorResponses"
+      -
+        get:
+          url: "/switch/price?number={{called}}&time={{start}}"
+          # afterResponse: "logErrorResponses"
+      -
+        get:
+          url: "/switch/price?number={{called}}&time={{start}}"
+          # afterResponse: "logErrorResponses"
+      -
+        post:
+          url: "/switch/call"
+          json:
+            calling: "{{calling}}"
+            called: "{{called}}"
+            start: "{{start}}"
+            duration: "{{duration}}"
+          # afterResponse: "logErrorResponses"
+      -
+        post:
+          url: "/switch/call"
+          json:
+            calling: "{{calling}}"
+            called: "{{called}}"
+            start: "{{start}}"
+            duration: "{{duration}}"
+          # afterResponse: "logErrorResponses"
+      -
+        post:
+          url: "/switch/call"
+          json:
+            calling: "{{calling}}"
+            called: "{{called}}"
+            start: "{{start}}"
+            duration: "{{duration}}"
+          # afterResponse: "logErrorResponses"
