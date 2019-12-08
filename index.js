@@ -35,7 +35,7 @@ const runTestExecution = function (testExecution) {
   const artillery = `node_modules/artillery/bin/artillery`;
   const overrides = {'config': {'target': testExecution.url}};
   const output = `result-${testExecution.id}.json`;
-  const command = `${artillery} run --overrides '${JSON.stringify(overrides)}' --output ${output} script.yml`;
+  const command = `cd artillery-load-tests && ${artillery} run --overrides '${JSON.stringify(overrides)}' --output ${output} script.yml`;
   console.log(`Executing command '${command}'`);
   return new Promise((resolve, reject) => {
     exec(command, (err, stdout, stderr) => {
@@ -55,7 +55,7 @@ const submitTestExecutionResults = async function(testExecution) {
   console.log('Submit results');
   const results = {
     id: testExecution.id,
-    data: readFileSync(`result-${testExecution.id}.json`, { encoding: 'utf8' })
+    data: readFileSync(`artillery-load-tests/result-${testExecution.id}.json`, { encoding: 'utf8' })
   };
   const response = await axios.post(`${judge}/testResults`, results);
   console.log(`Submit results finished [${response.status}]`);
