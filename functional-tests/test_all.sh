@@ -10,3 +10,9 @@ newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_ca
 
 #to run listing test
 newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_listing.csv -e Hack9_env.postman_environment.json --folder listing --reporters cli,json --reporter-json-export test_listing_results.json
+
+#to run invoice request test
+newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_invoice_request.csv -e Hack9_env.postman_environment.json --folder Invoice_request --reporters cli,json --reporter-json-export test_invoice_request_results.json
+
+#to run report test
+newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_report.csv -e Hack9_env.postman_environment.json --folder report --reporters cli,json --reporter-json-export test_report_results.json
