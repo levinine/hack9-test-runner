@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "388f0645-ef43-489d-a59a-88d8867d63bb",
-		"name": "Hack9 functional tests with real data",
+		"_postman_id": "f6d45fc3-568b-473b-ad0b-60692ea1d387",
+		"name": "Hack9 functional tests - invoice",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -380,9 +380,7 @@
 									"    });",
 									"    var data = JSON.parse(responseBody);",
 									"    ",
-									"",
 									"    tests[\"Check number of reports in listing: \" + data.invoices.length] = data.invoices.length.toString() === pm.variables.get(\"numberOfInvoices\").toString() ;",
-									"    ",
 									"    ",
 									"    var numberOfInvoices = pm.variables.get(\"numberOfInvoices\");",
 									"    ",
@@ -396,27 +394,25 @@
 									"            pm.expect(data.invoices[0].sum.toNumber().toFixed(2)).to.eql(pm.variables.get(\"callCost0\").toFixed(2).toString());",
 									"        });",
 									"    }else{",
+									"        var actual = [];",
+									"        var expected = [];",
 									"        for (var i = 0; i<numberOfInvoices; i++){",
 									"            var callCosti=\"callCost\"+i;",
-									"           /* pm.test(\"Test invoices in report\", function () {",
-									"                pm.expect(data.invoices[i].sum.toNumber().toFixed(2)).to.eql(pm.variables.get(callCosti).toFixed(2).toString());",
-									"            });    */",
 									"            ",
-									"            ",
-									"            // !!!! TO BE UPDATED AND DEFINED !!!!!",
-									"            //To see if we can get id of the report, if yes, we can match exact invoice from the json response to our expected data and then everything is clear , we will use option from the above (commented)",
-									"            //If not, than we need to check just if cost is in the json response",
-									"            //If we are going to use the second option, we must define rounding, how much decimals are we going to use. In this case we use 4 because that is how it is implemented right now so test passes",
-									"            pm.test(\"Test invoices in report when there is more than one invoice in response\", function () {",
-									"                pm.expect(pm.response.text()).to.include(pm.variables.get(callCosti).toFixed(4).toNumber().toString());",
-									"            });",
+									"            actual[i]=data.invoices[i].sum.toNumber().toFixed(2);",
+									"            expected[i] = pm.variables.get(callCosti).toFixed(2).toNumber().toString();",
 									"          ",
 									"        }",
+									"            pm.test(\"Test invoices in report when there is more than one invoice in response\", function () {",
+									"                for (var i = 0; i<numberOfInvoices; i++){",
+									"                    pm.expect(actual).to.include(expected[i]);",
+									"                }",
+									"            });",
 									"    }",
 									"    ",
 									"    pm.test(\"Test remaining in report\", function () {",
-									"            pm.expect(data.remaining.toNumber().toFixed(2)).to.eql(pm.variables.get(\"invoiceRemaining\").toFixed(2).toString());",
-									"        });",
+									"        pm.expect(data.remaining.toNumber().toFixed(2)).to.eql(pm.variables.get(\"invoiceRemaining\").toFixed(2).toString());",
+									"    });",
 									"",
 									"",
 									"",
@@ -440,6 +436,118 @@
 								"{{callCalling}}"
 							]
 						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "invoice",
+			"item": [
+				{
+					"name": "Get invoice",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b3eb590d-a84b-4a86-8c6f-d1ea1f30b345",
+								"exec": [
+									"pm.sendRequest(pm.variables.get(\"base_url\") + \"/financial/report/\"+pm.variables.get(\"calling\"), function (err, response) {",
+									"    if (err) {",
+									"        console.log(err);",
+									"    } else {",
+									"        console.log(response.json());",
+									"        var data = response.json();",
+									" ",
+									"        pm.environment.set(\"invoice_id\", data.invoices[pm.variables.get(\"ordinarNumberOfInvoice\")].id);",
+									"    }",
+									"    ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "fa266a59-649b-4377-b3fe-a64b840690db",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var data = JSON.parse(responseBody);",
+									"",
+									"pm.test(\"Test calling number from invoice\", function () {",
+									"        pm.expect(data.calling.toString()).to.be.eql(pm.variables.get(\"calling\").toString());",
+									"});",
+									"",
+									"//Separating cases when there is one and more invoices ",
+									"//When tere are more than one invoice, matching them to the data from source data file to avoid possible fails in case different implementation uses different sorting ",
+									"if (pm.variables.get(\"numberOfInvoices\") === 1) {",
+									"    ",
+									"    pm.test(\"Test the start date of the invoice\", function () {",
+									"        FormatStartDateActual = new Date(data.start).getTime(); ",
+									"        FormatStartDateExpected = new Date(pm.variables.get(\"expected_start0\")).getTime(); ",
+									"        pm.expect(FormatStartDateActual).to.be.eql(FormatStartDateExpected);",
+									"    });",
+									"",
+									"    pm.test(\"Test the end date of the invoice\", function () {",
+									"        FormatEndDateActual = new Date(data.end).getTime(); ",
+									"        FormatEndDateExpected = new Date(pm.variables.get(\"expected_end0\")).getTime(); ",
+									"        pm.expect(FormatEndDateActual).to.be.eql(FormatEndDateExpected);",
+									"    });",
+									"",
+									"    pm.test(\"Test amount to be payed for the invoice\", function () {",
+									"        pm.expect(data.sum.toNumber().toFixed(2)).to.be.eql(pm.variables.get(\"expected_sum0\").toFixed(2));",
+									"    });",
+									"",
+									"    pm.test(\"Test invoice count (number of calls made during the invoicing period)\", function () {",
+									"        pm.expect(data.count.toString()).to.be.eql(pm.variables.get(\"expected_count0\").toString());",
+									"    });",
+									"}else{",
+									"     for (var NumberOfInvoicesTemp = 0; NumberOfInvoicesTemp < pm.variables.get(\"numberOfInvoices\"); NumberOfInvoicesTemp++){",
+									"        ",
+									"            var expected_startNumberOfInvoicesTemp=\"expected_start\"+NumberOfInvoicesTemp;",
+									"            var expected_endNumberOfInvoicesTemp=\"expected_end\"+NumberOfInvoicesTemp;",
+									"            var expected_sumNumberOfInvoicesTemp=\"expected_sum\"+NumberOfInvoicesTemp;",
+									"            var expected_countNumberOfInvoicesTemp=\"expected_count\"+NumberOfInvoicesTemp;",
+									"            ",
+									"            FormatStartDateActual = new Date(data.start).getTime(); ",
+									"            FormatStartDateExpected = new Date(pm.variables.get(expected_startNumberOfInvoicesTemp)).getTime(); ",
+									"            FormatEndDateActual = new Date(data.end).getTime(); ",
+									"            FormatEndDateExpected = new Date(pm.variables.get(expected_endNumberOfInvoicesTemp)).getTime(); ",
+									"            if((FormatStartDateActual === FormatStartDateExpected) & (FormatEndDateActual===FormatEndDateExpected)){",
+									"                pm.test(\"Test invoice count (number of calls made during the invoicing period)\" , function () {",
+									"                    pm.expect(data.count.toString()).to.be.eql(pm.variables.get(expected_countNumberOfInvoicesTemp).toString());",
+									"                });",
+									"                pm.test(\"Test amount to be payed for the invoice\", function () {",
+									"                    pm.expect(data.sum.toNumber().toFixed(2)).to.be.eql(pm.variables.get(expected_sumNumberOfInvoicesTemp).toFixed(2));",
+									"                });",
+									"            }",
+									"     }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/financial/invoice/{{invoice_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"financial",
+								"invoice",
+								"{{invoice_id}}"
+							]
+						},
+						"description": "Get the first invoice"
 					},
 					"response": []
 				}

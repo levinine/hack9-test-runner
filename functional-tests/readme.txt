@@ -16,3 +16,6 @@ newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_in
 
 to run report test
 newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_report.csv -e Hack9_env.postman_environment.json --folder report --reporters cli,json --reporter-json-export test_report_results.json
+
+to run report test
+newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_invoice.csv -e Hack9_env.postman_environment.json --folder invoice --reporters cli,json --reporter-json-export test_report_results.json
