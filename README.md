@@ -12,8 +12,11 @@ Tests that needs to be run can be put here, or have their own repo and imported 
 
 3. If there is a test request - run it and submit results back.
 
-
 ## Build
+
+Install dependencies
+
+```npm install```
 
 Application is packed in Docker image.
 
@@ -22,6 +25,31 @@ Application is packed in Docker image.
 ## Run
 
 ```sudo docker run hack9-test-runner```
+
+Additional environment variables can be specified when running Docker continer:
+
+* `HACK9_JUDGE` - URL where the Judge application is running (default `http://localhost:3000/dev`)
+* `HACK9_CLOUD_PROVIDER` - Cloud provider where test runner is running, one of: aws, azure or gcp (default `aws`)
+* `HACK9_REGION` - Region in which test runner is running (default `eu-west-1`)
+
+For example:
+
+```sudo docker run -e HACK9_JUDGE=https://5lu3e68nw8.execute-api.eu-west-1.amazonaws.com/dev -e HACK9_CLOUD_PROVIDER=aws -e HACK9_REGION=eu-west-1 hack9-test-runner```
+
+## Publish to ECR
+
+``` Bash
+# Get Docker login command
+aws ecr get-login --no-include-email --region eu-west-1
+# Execute output of previous command
+sudo docker login -u AWS -p <password> https://745008152238.dkr.ecr.eu-west-1.amazonaws.com
+# Create repository; this was done already
+aws ecr create-repository --repository-name levi9/hack9-test-runner
+# Tag Docker image 
+sudo docker tag hack9-test-runner 745008152238.dkr.ecr.eu-west-1.amazonaws.com/levi9/hack9-test-runner
+# Push the image
+sudo docker push 745008152238.dkr.ecr.eu-west-1.amazonaws.com/levi9/hack9-test-runner
+```
 
 ## Run locally
 
