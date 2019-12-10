@@ -1,14 +1,16 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-export let options = {
-  vus: 250,
-  // duration: "10s"
-  iterations: 6000000
-};
-
 const apiUrl = __ENV.apiUrl || 'http://localhost:8080/reference';
 const testData = open("../artillery-load-tests/data-100k.csv").split('\n');
+const vus = __ENV.vus || 250;
+const iterations = __ENV.iterations || 6000000;
+
+export let options = {
+  vus: vus,
+  // duration: "10s"
+  iterations: iterations
+};
 
 export default function() {
   if (__ENV.phase === 'getPrice') {
