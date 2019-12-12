@@ -1,13 +1,16 @@
 const axios = require('axios');
 const express = require('express');
 const { exec } = require('child_process');
-const { readFileSync } = require('fs');
+const { readFileSync, writeFileSync } = require('fs');
 
 const second = 1000, minute = 60 * second;
 const port = 3500;
 const judgeUrl = process.env.HACK9_JUDGE || 'http://localhost:3000/dev';
 const cloudProvider = process.env.HACK9_CLOUD_PROVIDER || 'aws';
 const region = process.env.HACK9_REGION || 'eu-west-1';
+const exposedUrl = process.env.TEST_RUNNER_BASE_URL || `http://localhost:${port}`;
+
+let testInProgress = false;
 
 const exposeApi = async function () {
   const app = express();
@@ -40,10 +43,10 @@ const getTestExecution = async function () {
 
 const runTestExecution = async function (testExecution) {
   console.log(`Run task ${testExecution.id} [${testExecution.url}]`);
-  let results = {};
-  results.functional = await runFunctionalTests(testExecution);
-  results.load = await runLoadTests(testExecution);
-  return results;
+  testExecution.results = {};
+  await runFunctionalTests(testExecution);
+  await runLoadTests(testExecution);
+  writeFileSync(`results/${testExecution.id}/results.json`, JSON.stringify(testExecution.results));
 }
 
 const runCommand = function (command) {
@@ -51,53 +54,104 @@ const runCommand = function (command) {
     console.log(`Running command '${command}'`);
     exec(command, (err, stdout, stderr) => {
       resolve({ err, stdout, stderr });
-      // if (err || stderr) {
-      //   console.log(`Error running command ${command}`, err, stdout, stderr);
-      //   reject(err || stderr);
-      // } else {
-      //   console.log(`Success running command ${command}`, stdout);
-      //   resolve(stdout);
-      // }
     });
   });
 }
+const functionalTests = [
+  { name: 'reset', data: null },
+  { name: 'price', data: 'test_data_for_ft_price.csv' },
+  { name: 'call', data: 'test_data_for_ft_calls.csv' },
+  { name: 'listing', data: 'test_data_for_ft_listing.csv' },
+  { name: 'invoice_request', data: 'test_data_for_ft_invoice_request.csv' },
+  { name: 'report', data: 'test_data_for_ft_report.csv' },
+  { name: 'invoice', data: 'test_data_for_ft_invoice.csv' }
+];
+const testFile = 'functional-tests/Hack9_functional_tests.postman_collection.json';
 
-const runFunctionalTests = function (testExecution) {
-  return runCommand('echo newman');
+const runFunctionalTests = async function (testExecution) {
+  for (test of functionalTests) {
+    testExecution.results[test.name] = await runFunctionalTest(testExecution, test);
+  }
 }
 
-const runLoadTests = function (testExecution) {
-  // k6 run -e phase=getPrice -e apiUrl=http://ec2-52-50-206-210.eu-west-1.compute.amazonaws.com:8080/reference -e iterations=1000 script.js
-  const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
-  return runCommand(command).then(output => {
-    // TODO parse score from output 
-    return { success: true, score: 1, output: output.stdout };
-  });
+const runFunctionalTest = async function (testExecution, test) {
+  try {
+    const outputFile = `results/${testExecution.id}/test_${test.name}_results.json`;
+    const command = `newman run ${testFile} \
+                    ${ test.data ? '-d functional-tests/' + test.data : '' } \
+                    --env-var base_url=${testExecution.url} \
+                    --env-var callback_url=${exposedUrl} \
+                    --folder ${test.name} \
+                    --reporters cli,json \
+                    --reporter-json-export ${outputFile}`;
+    const stdout = await runCommand(command);
+    const outputString = readFileSync(outputFile, { encoding: 'utf8' });
+    const output = JSON.parse(outputString);
+    const result = {
+      success: output.run.failures.length === 0,
+      score: output.run.failures.length === 0 ? 1 : 0,
+      output: JSON.stringify({ json: output.run, stdout })
+    }
+    return result;
+  } catch (e) {
+    return {
+      success: false,
+      score: 0,
+      output: JSON.stringify(e)
+    }
+  }
 }
 
-const runArtilleryLoadTests = function (testExecution) {
-  const artillery = `node_modules/artillery/bin/artillery`;
-  const overrides = {'config': {'target': testExecution.url}};
-  const output = `result-${testExecution.id}.json`;
-  const command = `cd artillery-load-tests && ${artillery} run --overrides '${JSON.stringify(overrides)}' --output ${output} script.yml`;
-  return runCommand(command);
+const runLoadTests = async function (testExecution) {
+  try {
+    if (testExecution.results.price.success) {
+      // k6 run -e phase=getPrice -e apiUrl=http://ec2-52-50-206-210.eu-west-1.compute.amazonaws.com:8080/reference -e iterations=1000 script.js
+      const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
+      const output = await runCommand(command);
+      // TODO parse score from output 
+      testExecution.results.priceLoad = { success: true, score: 1, output: output.stdout };
+    } else {
+      testExecution.results.priceLoad = { success: null, score: 0, output: 'skipped' };
+    }
+  } catch (e) {
+    testExecution.results.priceLoad = { success: false, score: 0, output: JSON.stringify(e) };
+  }
+
+  try {
+    if (testExecution.results.call.success) {
+      const command = `k6 run -e phase=postCall -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
+      const output = await runCommand(command);
+      // TODO parse score from output 
+      testExecution.results.callLoad = { success: true, score: 1, output: output.stdout };
+    } else {
+      testExecution.results.callLoad = { success: null, score: 0, output: 'skipped' };
+    }
+  } catch (e) {
+    testExecution.results.callLoad = { success: false, score: 0, output: JSON.stringify(e) };
+  }
 }
 
-const submitTestExecutionResults = async function(testExecution, results) {
+const submitTestExecutionResults = async function(testExecution) {
   console.log('Submit results');
   const payload = {
     id: testExecution.id,
-    data: JSON.stringify(results)
+    data: JSON.stringify(testExecution.results)
   };
   const response = await axios.post(`${judgeUrl}/testResults`, payload);
   console.log(`Submit results finished [${response.status}]`);
 }
 
 const testExecution = async function() {
-  const testExecution = await getTestExecution();
-  if (testExecution && testExecution.id) {
-    const results = await runTestExecution(testExecution);
-    await submitTestExecutionResults(testExecution, results);
+  try {
+    const testExecution = await getTestExecution();
+    // const testExecution = { id: 1, url: 'http://hack9ri-env-1.wppmcc2szq.eu-west-1.elasticbeanstalk.com/reference/' };
+    if (testExecution && testExecution.id) {
+      await runTestExecution(testExecution);
+      // console.log(testExecution.results);
+      await submitTestExecutionResults(testExecution);
+    }
+  } catch (e) {
+    console.log('Failed test execution', e);
   }
 }
 

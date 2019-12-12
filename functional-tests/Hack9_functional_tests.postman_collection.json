@@ -331,7 +331,7 @@
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Invoice_request",
+			"name": "invoice_request",
 			"item": [
 				{
 					"name": "Invoice request",

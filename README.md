@@ -31,10 +31,11 @@ Additional environment variables can be specified when running Docker continer:
 * `HACK9_JUDGE` - URL where the Judge application is running (default `http://localhost:3000/dev`)
 * `HACK9_CLOUD_PROVIDER` - Cloud provider where test runner is running, one of: aws, azure or gcp (default `aws`)
 * `HACK9_REGION` - Region in which test runner is running (default `eu-west-1`)
+* `TEST_RUNNER_BASE_URL` - URL where test runner is exposed (default `http://localhost:3500`)
 
 For example:
 
-```sudo docker run -e HACK9_JUDGE=https://5lu3e68nw8.execute-api.eu-west-1.amazonaws.com/dev -e HACK9_CLOUD_PROVIDER=aws -e HACK9_REGION=eu-west-1 hack9-test-runner```
+```sudo docker run -e HACK9_JUDGE=https://5lu3e68nw8.execute-api.eu-west-1.amazonaws.com/dev -e HACK9_CLOUD_PROVIDER=aws -e HACK9_REGION=eu-west-1 745008152238.dkr.ecr.eu-west-1.amazonaws.com/levi9/hack9-test-runner```
 
 ## Publish to ECR
 
