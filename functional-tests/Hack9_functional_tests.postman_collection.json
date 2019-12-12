@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "f6d45fc3-568b-473b-ad0b-60692ea1d387",
-		"name": "Hack9 functional tests - invoice",
+		"_postman_id": "4792d3ec-63d9-46da-8202-81cb798e566c",
+		"name": "Hack9 functional tests - invoice copy",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -323,7 +323,9 @@
 								"exec": [
 									"pm.test(\"Status code is 202\", function () {",
 									"    pm.response.to.have.status(202);",
-									"});"
+									"});",
+									"",
+									"setTimeout(function(){  }, 3000);"
 								],
 								"type": "text/javascript"
 							}
@@ -341,7 +343,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"start\": \"{{start}}\",\n\t\"end\": \"{{end}}\",\n\t\"callback\": \"{{control_url}}/callback/invoices/{{invoice_token}}\"\n}",
+							"raw": "{\n\t\"start\": \"{{start}}\",\n\t\"end\": \"{{end}}\",\n\t\"callback\": \"{{callback_url}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
