@@ -4,7 +4,7 @@ const { exec } = require('child_process');
 const { readFileSync, writeFileSync } = require('fs');
 
 const second = 1000, minute = 60 * second;
-const port = 3500;
+const port = process.env.PORT || 3500;
 const judgeUrl = process.env.HACK9_JUDGE || 'http://localhost:3000/dev';
 const cloudProvider = process.env.HACK9_CLOUD_PROVIDER || 'aws';
 const region = process.env.HACK9_REGION || 'eu-west-1';
@@ -76,21 +76,21 @@ const runFunctionalTests = async function (testExecution) {
 
 const runFunctionalTest = async function (testExecution, test) {
   try {
-    const outputFile = `results/${testExecution.id}/test_${test.name}_results.json`;
+    const reportFile = `results/${testExecution.id}/test_${test.name}_results.json`;
     const command = `newman run ${testFile} \
                     ${ test.data ? '-d functional-tests/' + test.data : '' } \
                     --env-var base_url=${testExecution.url} \
                     --env-var callback_url=${exposedUrl} \
                     --folder ${test.name} \
                     --reporters cli,json \
-                    --reporter-json-export ${outputFile}`;
-    const stdout = await runCommand(command);
-    const outputString = readFileSync(outputFile, { encoding: 'utf8' });
-    const output = JSON.parse(outputString);
+                    --reporter-json-export ${reportFile}`;
+    const output = await runCommand(command);
+    const reportString = readFileSync(reportFile, { encoding: 'utf8' });
+    const report = JSON.parse(reportString);
     const result = {
-      success: output.run.failures.length === 0,
-      score: output.run.failures.length === 0 ? 1 : 0,
-      output: JSON.stringify({ json: output.run, stdout })
+      success: report.run.failures.length === 0,
+      score: report.run.failures.length === 0 ? 1 : 0,
+      output: output.stdout
     }
     return result;
   } catch (e) {
@@ -102,14 +102,21 @@ const runFunctionalTest = async function (testExecution, test) {
   }
 }
 
+const parseAverageRequestDuration = function (output) {
+  try {
+    return output.match(new RegExp('http_req_duration([.]*): avg=([^ ]*)'))[2];
+  } catch (e) {
+    console.log('Cannot parse output, returning 0', output);
+    return 0;
+  }
+}
 const runLoadTests = async function (testExecution) {
   try {
     if (testExecution.results.price.success) {
       // k6 run -e phase=getPrice -e apiUrl=http://ec2-52-50-206-210.eu-west-1.compute.amazonaws.com:8080/reference -e iterations=1000 script.js
       const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
       const output = await runCommand(command);
-      // TODO parse score from output 
-      testExecution.results.priceLoad = { success: true, score: 1, output: output.stdout };
+      testExecution.results.priceLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
     } else {
       testExecution.results.priceLoad = { success: null, score: 0, output: 'skipped' };
     }
@@ -121,8 +128,7 @@ const runLoadTests = async function (testExecution) {
     if (testExecution.results.call.success) {
       const command = `k6 run -e phase=postCall -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
       const output = await runCommand(command);
-      // TODO parse score from output 
-      testExecution.results.callLoad = { success: true, score: 1, output: output.stdout };
+      testExecution.results.callLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
     } else {
       testExecution.results.callLoad = { success: null, score: 0, output: 'skipped' };
     }
