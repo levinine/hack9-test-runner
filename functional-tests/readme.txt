@@ -17,7 +17,7 @@ to run report test
 newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_report.csv  --env-var base_url={{URL}} --folder report --reporters cli,json --reporter-json-export test_report_results.json
 
 to run invoice test
-newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_invoice.csv --env-var base_url={{URL}} --folder invoice --reporters cli,json --reporter-json-export test_report_results.json
+newman run Hack9_functional_tests.postman_collection.json -d test_data_for_ft_invoice.csv --env-var base_url={{URL}} --folder invoice --reporters cli,json --reporter-json-export test_invoice_results.json
 
 ---------------
 
