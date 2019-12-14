@@ -18,6 +18,10 @@ const exposeApi = async function () {
     testExecution();
     res.send({'status': 'OK'});
   });
+  app.post('/callback', (req, res) => {
+    console.log(req);
+    res.send({'status': 'OK'});
+  });
   await app.listen(port, () => console.log(`API running on port ${port}...`));
 }
 
@@ -69,7 +73,7 @@ const functionalTests = [
 const testFile = 'functional-tests/Hack9_functional_tests.postman_collection.json';
 
 const runFunctionalTests = async function (testExecution) {
-  for (test of functionalTests) {
+  for (let test of functionalTests) {
     testExecution.results[test.name] = await runFunctionalTest(testExecution, test);
   }
 }
@@ -80,7 +84,7 @@ const runFunctionalTest = async function (testExecution, test) {
     const command = `newman run ${testFile} \
                     ${ test.data ? '-d functional-tests/' + test.data : '' } \
                     --env-var base_url=${testExecution.url} \
-                    --env-var callback_url=${exposedUrl} \
+                    --env-var callback_url=${exposedUrl}/callback?id=${testExecution.id} \
                     --folder ${test.name} \
                     --reporters cli,json \
                     --reporter-json-export ${reportFile}`;
