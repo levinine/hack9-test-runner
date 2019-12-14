@@ -118,7 +118,7 @@ const runLoadTests = async function (testExecution) {
   try {
     if (testExecution.results.price.success) {
       // k6 run -e phase=getPrice -e apiUrl=http://ec2-52-50-206-210.eu-west-1.compute.amazonaws.com:8080/reference -e iterations=1000 script.js
-      const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
+      const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=10000 k6-load-tests/script.js`;
       const output = await runCommand(command);
       testExecution.results.priceLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
     } else {
@@ -130,7 +130,7 @@ const runLoadTests = async function (testExecution) {
 
   try {
     if (testExecution.results.call.success) {
-      const command = `k6 run -e phase=postCall -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
+      const command = `k6 run -e phase=postCall -e apiUrl=${testExecution.url} -e iterations=10000 k6-load-tests/script.js`;
       const output = await runCommand(command);
       testExecution.results.callLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
     } else {
@@ -152,16 +152,22 @@ const submitTestExecutionResults = async function(testExecution) {
 }
 
 const testExecution = async function() {
+  if (testInProgress) {
+    return;
+  }
   try {
     const testExecution = await getTestExecution();
     // const testExecution = { id: 1, url: 'http://hack9ri-env-1.wppmcc2szq.eu-west-1.elasticbeanstalk.com/reference/' };
     if (testExecution && testExecution.id) {
+      testInProgress = true;
       await runTestExecution(testExecution);
       // console.log(testExecution.results);
       await submitTestExecutionResults(testExecution);
+      testInProgress = false;
     }
   } catch (e) {
     console.log('Failed test execution', e);
+    testInProgress = false;
   }
 }
 
