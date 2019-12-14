@@ -138,7 +138,7 @@
 									"});",
 									"",
 									"pm.test(\"Test rounded from result body\", function () {",
-									"    pm.expect(data.rounded.toString()).to.be.eql(pm.variables.get(\"callRounded\").toString());",
+									"    pm.expect(data.rounded.toString()).to.be.eql(pm.variables.get(\"effective duration\").toString());",
 									"});",
 									"",
 									"pm.test(\"Test call price from result body\", function () {",
