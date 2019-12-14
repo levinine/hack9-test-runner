@@ -136,10 +136,7 @@
 									"pm.test(\"Test call duration from result body\", function () {",
 									"    pm.expect(data.duration.toString()).to.be.eql(pm.variables.get(\"callDuration\").toString());",
 									"});",
-									"",
-									"pm.test(\"Test rounded from result body\", function () {",
-									"    pm.expect(data.rounded.toString()).to.be.eql(pm.variables.get(\"effective duration\").toString());",
-									"});",
+									
 									"",
 									"pm.test(\"Test call price from result body\", function () {",
 									"    pm.expect(data.price.toNumber().toFixed(2)).to.be.eql(pm.variables.get(\"callPrice\").toFixed(2).toString());",
@@ -166,7 +163,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"calling\" : \"{{callCalling}}\",\n\t\"called\" : \"{{callCalled}}\",\n\t\"start\" : \"{{callStart}}\",\n\t\"duration\" : \"{{callDuration}}\" \n}",
+							"raw": "{\n\t\"calling\" : \"{{callCalling}}\",\n\t\"called\" : \"{{callCalled}}\",\n\t\"start\" : \"{{callStart}}\",\n\t\"duration\" : {{callDuration}} \n}",
 							"options": {
 								"raw": {
 									"language": "json"
