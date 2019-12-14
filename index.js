@@ -135,6 +135,18 @@ const runLoadTests = async function (testExecution) {
   } catch (e) {
     testExecution.results.callLoad = { success: false, score: 0, output: JSON.stringify(e) };
   }
+
+  try {
+    if (testExecution.results.listing.success) {
+      const command = `k6 run -e phase=listingCall -e apiUrl=${testExecution.url} -e iterations=1000 k6-load-tests/script.js`;
+      const output = await runCommand(command);
+      testExecution.results.listingLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
+    } else {
+      testExecution.results.listingLoad = { success: null, score: 0, output: 'skipped' };
+    }
+  } catch (e) {
+    testExecution.results.listingLoad = { success: false, score: 0, output: JSON.stringify(e) };
+  }
 }
 
 const submitTestExecutionResults = async function(testExecution) {

@@ -3,6 +3,7 @@ import { check, sleep } from "k6";
 
 const apiUrl = __ENV.apiUrl || 'http://localhost:8080/reference';
 const testData = open("./data-60k.csv").split('\n');
+const testDatalisting = open("./data-60klisting.csv").split('\n');
 const vus = __ENV.vus || 250;
 const iterations = __ENV.iterations || 6000000;
 
@@ -17,6 +18,8 @@ export default function() {
     getPrice();
   } else if (__ENV.phase === 'postCall') {
     postCall();
+  } else if (__ENV.phase === 'listingCall') {
+    listingCall();
   }
   // sleep(0.1);
 };
@@ -44,3 +47,15 @@ function postCall () {
     "status was 200": (r) => r.status == 200
   });
 }
+  function listingCall () {
+    let item = testDatalisting[__ITER%60000].split(',');
+    const calling= item[0];
+    const  from= item[5];
+    const to= item[6];
+    
+    let res = http.get(`${apiUrl}/listing/${calling}?from=${from}&to=${to}`);
+    check(res, {
+      "status was 200": (r) => r.status == 200
+    });
+  }
+
