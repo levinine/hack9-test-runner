@@ -163,7 +163,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"calling\" : \"{{callCalling}}\",\n\t\"called\" : \"{{callCalled}}\",\n\t\"start\" : \"{{callStart}}\",\n\t\"duration\" : \"{{callDuration}}\" \n}",
+							"raw": "{\n\t\"calling\" : \"{{callCalling}}\",\n\t\"called\" : \"{{callCalled}}\",\n\t\"start\" : \"{{callStart}}\",\n\t\"duration\" : {{callDuration}} \n}",
 							"options": {
 								"raw": {
 									"language": "json"
