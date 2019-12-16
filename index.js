@@ -118,7 +118,7 @@ const runLoadTests = async function (testExecution) {
   try {
     if (testExecution.results.price.success) {
       // k6 run -e phase=getPrice -e apiUrl=http://ec2-52-50-206-210.eu-west-1.compute.amazonaws.com:8080/reference -e iterations=1000 script.js
-      const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=10000 k6-load-tests/script.js`;
+      const command = `k6 run -e phase=getPrice -e apiUrl=${testExecution.url} -e iterations=20000 k6-load-tests/script.js`;
       const output = await runCommand(command);
       testExecution.results.priceLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
     } else {
@@ -130,7 +130,7 @@ const runLoadTests = async function (testExecution) {
 
   try {
     if (testExecution.results.call.success) {
-      const command = `k6 run -e phase=postCall -e apiUrl=${testExecution.url} -e iterations=10000 k6-load-tests/script.js`;
+      const command = `k6 run -e phase=postCall -e apiUrl=${testExecution.url} -e iterations=20000 k6-load-tests/script.js`;
       const output = await runCommand(command);
       testExecution.results.callLoad = { success: true, score: parseAverageRequestDuration(output.stdout), output: output.stdout };
     } else {
